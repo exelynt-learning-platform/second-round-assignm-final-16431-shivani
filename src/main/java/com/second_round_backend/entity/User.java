@@ -10,7 +10,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import lombok.Data;
 
@@ -31,9 +30,6 @@ public class User {
 	@Enumerated(EnumType.STRING)
 	private Role role;
 	
-	@OneToMany(mappedBy = "user" ,cascade = CascadeType.ALL)
-	private List<Product> products;
-	
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private CartItem cartItem;
+    private Cart cart;
 }

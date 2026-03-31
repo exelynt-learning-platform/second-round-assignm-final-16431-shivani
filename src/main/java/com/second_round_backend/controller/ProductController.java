@@ -1,7 +1,12 @@
 package com.second_round_backend.controller;
 
+import java.util.List;
+
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -9,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.second_round_backend.entity.Cart;
 import com.second_round_backend.entity.Product;
-import com.second_round_backend.security.JwtUtil;
 import com.second_round_backend.service.ProductService;
 
 @RequestMapping("/api")
@@ -18,13 +23,15 @@ import com.second_round_backend.service.ProductService;
 public class ProductController {
 
 	private final ProductService productService;
-	private final JwtUtil jwtUtil; 
 	
-	public ProductController(ProductService productService, JwtUtil jwtUtil) {
+	public ProductController(ProductService productService) {
 		this.productService = productService;
-		this.jwtUtil = jwtUtil;
 	}
 	
+	@GetMapping("/getAllProducts")
+	public List<Product> getAllProducts() {
+	        return productService.getAllProducts();
+	}
 	
 	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping("/addProduct")
@@ -45,11 +52,21 @@ public class ProductController {
 	}
 	
 	@PreAuthorize("hasRole('USER')")
-	@PostMapping("/addProductInCart")
-	public String addProductInCart(@RequestBody Product product, @RequestParam String token) {
-		System.err.println("hellllllll");
-	    String	userEmail = jwtUtil.extractEmail(token);
-		return productService.addProductInCart(product, userEmail);
+	@PostMapping("/addProductInCart/{userId}/{productId}/{quantity}")
+	public Cart addToCart(@PathVariable Long userId,
+			              @PathVariable Long productId,
+			              @PathVariable int quantity) {
+		return productService.addToCart(userId, productId,quantity);
+	}
+	
+	private String getLoggedInUserEmail() {
+	    Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+	    if (principal instanceof UserDetails) {
+	        return ((UserDetails) principal).getUsername();
+	    } else {
+	        return principal.toString();
+	    }
 	}
 	
 }
