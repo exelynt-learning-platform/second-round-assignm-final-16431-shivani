@@ -1,5 +1,6 @@
 package com.second_round_backend.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -82,6 +83,10 @@ public class ProductService {
 	    if (cart == null) {
 	        cart = new Cart();
 	        cart.setUser(user);
+	    }
+	    
+	    if (cart.getCartItems() == null) {
+	        cart.setCartItems(new ArrayList<>());
 	    }
 
 	    Product product = productRepository.findById(productId)

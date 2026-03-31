@@ -1,5 +1,6 @@
 package com.second_round_backend.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -26,6 +27,13 @@ public class Order {
     private double totalPrice;
     private String status;
 
+    private String shippingAddress;  
+    private String paymentStatus;  
+    
     @OneToMany(cascade = CascadeType.ALL)
     private List<OrderItem> orderitems;
+    
+    public Order() {
+        this.orderitems = new ArrayList<>();
+    }
 }
