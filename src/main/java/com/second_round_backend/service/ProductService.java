@@ -1,5 +1,6 @@
 package com.second_round_backend.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -74,6 +75,11 @@ public class ProductService {
 		OrgProduct.setUser(user);
 	    
 		return "Product Add in Cart";
+	}
+
+	public List<Product> getAllProducts() {
+		List<Product> products = productRepository.findAll();
+		return products;
 	}
 
 }

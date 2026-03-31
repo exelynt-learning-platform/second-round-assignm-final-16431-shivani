@@ -1,9 +1,12 @@
 package com.second_round_backend.controller;
 
+import java.util.List;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,6 +27,10 @@ public class ProductController {
 		this.productService = productService;
 	}
 	
+	@GetMapping("/getAllProducts")
+	public List<Product> getAllProducts() {
+	        return productService.getAllProducts();
+	}
 	
 	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping("/addProduct")
