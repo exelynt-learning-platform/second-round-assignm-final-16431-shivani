@@ -1,6 +1,8 @@
 package com.second_round_backend.controller;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.second_round_backend.entity.Product;
-import com.second_round_backend.security.JwtUtil;
 import com.second_round_backend.service.ProductService;
 
 @RequestMapping("/api")
@@ -18,11 +19,9 @@ import com.second_round_backend.service.ProductService;
 public class ProductController {
 
 	private final ProductService productService;
-	private final JwtUtil jwtUtil; 
 	
-	public ProductController(ProductService productService, JwtUtil jwtUtil) {
+	public ProductController(ProductService productService) {
 		this.productService = productService;
-		this.jwtUtil = jwtUtil;
 	}
 	
 	
@@ -46,10 +45,19 @@ public class ProductController {
 	
 	@PreAuthorize("hasRole('USER')")
 	@PostMapping("/addProductInCart")
-	public String addProductInCart(@RequestBody Product product, @RequestParam String token) {
-		System.err.println("hellllllll");
-	    String	userEmail = jwtUtil.extractEmail(token);
+	public String addProductInCart(@RequestBody Product product) {
+	    String	userEmail = getLoggedInUserEmail();
 		return productService.addProductInCart(product, userEmail);
+	}
+	
+	private String getLoggedInUserEmail() {
+	    Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+	    if (principal instanceof UserDetails) {
+	        return ((UserDetails) principal).getUsername();
+	    } else {
+	        return principal.toString();
+	    }
 	}
 	
 }
