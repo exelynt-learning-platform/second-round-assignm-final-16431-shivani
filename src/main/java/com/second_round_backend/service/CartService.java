@@ -2,6 +2,7 @@ package com.second_round_backend.service;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -26,42 +27,72 @@ public class CartService {
 
     public Cart addToCart(Long userId, Long productId, int qty) {
 
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Cart cart = cartRepo.findByUserId(userId);
 
+        if (cart == null) {
+            cart = new Cart();
+            cart.setUser(user);
+        }
+
         Product product = productRepo.findById(productId)
-                .orElseThrow();
+                .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        CartItem item = new CartItem();
-        item.setProduct(product);
-        item.setQuantity(qty);
-        item.setCart(cart);
+        Optional<CartItem> existingItem = cart.getCartItems()
+                .stream()
+                .filter(i -> i.getProduct().getProductId().equals(productId))
+                .findFirst();
 
-        cart.getCartItems().add(item);
+        if (existingItem.isPresent()) {
+
+            CartItem item = existingItem.get();
+            item.setQuantity(item.getQuantity() + qty);
+        } else {
+  
+            CartItem item = new CartItem();
+            item.setProduct(product);
+            item.setQuantity(qty);
+            item.setCart(cart);
+
+            cart.getCartItems().add(item);
+        }
 
         return cartRepo.save(cart);
     }
 
+    public String removeFromCart(Long userId, Long productId) {
 
-	public String removeFromCart(Long userId, Long productId) {
-		
-		Cart cart = cartRepo.findByUserId(userId);
-		
-		List<CartItem> items = cart.getCartItems();
-		
-		Iterator<CartItem> list = items.iterator();
-		while(list.hasNext()) {
-			CartItem item = list.next();
-			if(item.getProduct().getProductId() == productId) {
-				cartRepo.deleteById(item.getId());
-			}
-		}
-		
-		return "Product remove successfully";
-	}
+        Cart cart = cartRepo.findByUserId(userId);
 
-	public List<CartItem> getCartItems(Long userId) {
-		User user = userRepository.findById(userId).orElseThrow();
-		
-		return user.getCart().getCartItems();
-	}
+        if (cart == null) {
+            throw new RuntimeException("Cart not found");
+        }
+
+        List<CartItem> items = cart.getCartItems();
+
+        boolean removed = items.removeIf(item ->
+                item.getProduct().getProductId().equals(productId)
+        );
+
+        if (!removed) {
+            throw new RuntimeException("Product not found in cart");
+        }
+
+        cartRepo.save(cart);
+
+        return "Product removed successfully";
+    }
+
+    public List<CartItem> getCartItems(Long userId) {
+
+        Cart cart = cartRepo.findByUserId(userId);
+
+        if (cart == null) {
+            throw new RuntimeException("Cart not found");
+        }
+
+        return cart.getCartItems();
+    }
 }

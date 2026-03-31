@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.second_round_backend.entity.Cart;
 import com.second_round_backend.entity.Product;
 import com.second_round_backend.service.ProductService;
 
@@ -51,10 +52,11 @@ public class ProductController {
 	}
 	
 	@PreAuthorize("hasRole('USER')")
-	@PostMapping("/addProductInCart")
-	public String addProductInCart(@RequestBody Product product) {
-	    String	userEmail = getLoggedInUserEmail();
-		return productService.addProductInCart(product, userEmail);
+	@PostMapping("/addProductInCart/{userId}/{productId}/{quantity}")
+	public Cart addToCart(@PathVariable Long userId,
+			              @PathVariable Long productId,
+			              @PathVariable int quantity) {
+		return productService.addToCart(userId, productId,quantity);
 	}
 	
 	private String getLoggedInUserEmail() {
