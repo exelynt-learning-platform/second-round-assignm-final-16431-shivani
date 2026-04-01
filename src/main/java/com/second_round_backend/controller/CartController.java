@@ -2,13 +2,7 @@ package com.second_round_backend.controller;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.second_round_backend.entity.Cart;
 import com.second_round_backend.entity.CartItem;
@@ -23,23 +17,24 @@ public class CartController {
 
     private final CartService service;
 
-    @PostMapping("/addProductInCart")
-    public Cart add(@RequestParam Long userId,
-                    @RequestParam Long productId,
-                    @RequestParam int qty) {
+    @PostMapping("/items")
+    public Cart addItem(@RequestParam Long userId,
+                        @RequestParam Long productId,
+                        @RequestParam int qty) {
 
         return service.addToCart(userId, productId, qty);
     }
 
-    @DeleteMapping("/removeProductFromCart")
-    public String remove(@RequestParam Long userId,
-                       @RequestParam Long productId) {
+
+    @DeleteMapping("/items")
+    public String removeItem(@RequestParam Long userId,
+                             @RequestParam Long productId) {
 
         return service.removeFromCart(userId, productId);
     }
 
-    @GetMapping("/getCartItems/{userId}")
-    public List<CartItem> getCart(@PathVariable Long userId) {
+    @GetMapping("/items/{userId}")
+    public List<CartItem> getCartItems(@PathVariable Long userId) {
         return service.getCartItems(userId);
     }
 }

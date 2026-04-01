@@ -1,134 +1,72 @@
 package com.second_round_backend.service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.second_round_backend.entity.Cart;
-import com.second_round_backend.entity.CartItem;
 import com.second_round_backend.entity.Product;
-import com.second_round_backend.entity.User;
-import com.second_round_backend.repository.CartRepository;
+import com.second_round_backend.exceptionHandler.BadRequestException;
+import com.second_round_backend.exceptionHandler.ResourceNotFoundException;
 import com.second_round_backend.repository.ProductRepository;
-import com.second_round_backend.repository.UserRepository;
 
 import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
 public class ProductService {
-	
-	private final ProductRepository productRepository;
-	private final UserRepository userRepository;
-	private final CartRepository cartRepository;
-	
-	
 
-	public String addProduct(Product product) {
+    private final ProductRepository productRepository;
 
-	    if (product.getPrice() <= 0) {
-	        return "Price must be greater than 0";
-	    }
+    public Product addProduct(Product product) {
 
-	    if (product.getQuantity() < 0) {
-	        return "Quantity cannot be negative";
-	    }
+        if (product.getPrice() <= 0) {
+            throw new BadRequestException("Price must be greater than 0");
+        }
 
-	    Optional<Product> p1 = productRepository
-	            .findByProductname(product.getProductname());
+        if (product.getQuantity() < 0) {
+            throw new BadRequestException("Quantity cannot be negative");
+        }
 
-	    if (p1.isPresent()) {
-	        return "Product already available";
-	    }
+        productRepository.findByProductname(product.getProductname())
+                .ifPresent(p -> {
+                    throw new BadRequestException("Product already exists");
+                });
 
-	    productRepository.save(product);
-	    return "Product added successfully";
-	}
-	
-	public String updateProduct(Product newProduct) {
-		Optional<Product> p1 = productRepository.findById(newProduct.getProductId());
-		if(p1.isEmpty()) {
-			return "Product Not Found";
-		}
-		
-		Product product = p1.get();
-		product.setProductname(newProduct.getProductname());
-		product.setDescription(newProduct.getDescription());
-		product.setPrice(newProduct.getPrice());
-		product.setQuantity(newProduct.getQuantity());
-		productRepository.save(product);
-		
-		return "Update Successful";
-	}
+        return productRepository.save(product);
+    }
 
-	public String deleteProduct(Long id) {
-		Optional<Product> p1 = productRepository.findById(id);
-		if(!p1.isEmpty()) {
-			Product product = p1.get();
-			productRepository.delete(product);
-			return "Product Deleted";
-		}
-		return "Product Not Found";
-	}
+    public Product updateProduct(Product newProduct) {
 
-	public Cart addToCart(Long userId, Long productId, int qty) {
+        Product product = productRepository.findById(newProduct.getProductId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Product not found"));
 
-	    User user = userRepository.findById(userId)
-	            .orElseThrow(() -> new RuntimeException("User not found"));
+        if (newProduct.getPrice() <= 0) {
+            throw new BadRequestException("Invalid price");
+        }
 
-	    Cart cart = cartRepository.findByUserId(userId);
+        if (newProduct.getQuantity() < 0) {
+            throw new BadRequestException("Invalid quantity");
+        }
 
-	    if (cart == null) {
-	        cart = new Cart();
-	        cart.setUser(user);
-	    }
-	    
-	    if (cart.getCartItems() == null) {
-	        cart.setCartItems(new ArrayList<>());
-	    }
+        product.setProductname(newProduct.getProductname());
+        product.setDescription(newProduct.getDescription());
+        product.setPrice(newProduct.getPrice());
+        product.setQuantity(newProduct.getQuantity());
 
-	    Product product = productRepository.findById(productId)
-	            .orElseThrow(() -> new RuntimeException("Product not found"));
+        return productRepository.save(product);
+    }
 
-	    if (product.getQuantity() < qty) {
-	        throw new RuntimeException("Insufficient stock available");
-	    }
+    public void deleteProduct(Long id) {
 
-	    Optional<CartItem> existingItem = cart.getCartItems()
-	            .stream()
-	            .filter(i -> i.getProduct().getProductId().equals(productId))
-	            .findFirst();
+        Product product = productRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Product not found"));
 
-	    if (existingItem.isPresent()) {
+        productRepository.delete(product);
+    }
 
-	        CartItem item = existingItem.get();
-
-	        int newQty = item.getQuantity() + qty;
-
-	        if (product.getQuantity() < newQty) {
-	            throw new RuntimeException("Not enough stock for requested quantity");
-	        }
-
-	        item.setQuantity(newQty);
-
-	    } else {
-
-	        CartItem item = new CartItem();
-	        item.setProduct(product);
-	        item.setQuantity(qty);
-	        item.setCart(cart);
-
-	        cart.getCartItems().add(item);
-	    }
-
-	    return cartRepository.save(cart);
-	}
-
-	public List<Product> getAllProducts() {
-		List<Product> products = productRepository.findAll();
-		return products;
-	}
-
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
+    }
 }

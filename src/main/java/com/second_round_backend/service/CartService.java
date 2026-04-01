@@ -1,5 +1,6 @@
 package com.second_round_backend.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,7 +23,6 @@ public class CartService {
     private final CartRepository cartRepo;
     private final ProductRepository productRepo;
     private final UserRepository userRepository;
-    
 
     public Cart addToCart(Long userId, Long productId, int qty) {
 
@@ -34,6 +34,12 @@ public class CartService {
         if (cart == null) {
             cart = new Cart();
             cart.setUser(user);
+            cart.setCartItems(new ArrayList<>());
+            cart = cartRepo.save(cart); 
+        }
+
+        if (cart.getCartItems() == null) {
+            cart.setCartItems(new ArrayList<>());
         }
 
         Product product = productRepo.findById(productId)
@@ -48,8 +54,9 @@ public class CartService {
 
             CartItem item = existingItem.get();
             item.setQuantity(item.getQuantity() + qty);
+
         } else {
-  
+
             CartItem item = new CartItem();
             item.setProduct(product);
             item.setQuantity(qty);
@@ -65,13 +72,11 @@ public class CartService {
 
         Cart cart = cartRepo.findByUserId(userId);
 
-        if (cart == null) {
-            throw new RuntimeException("Cart not found");
+        if (cart == null || cart.getCartItems() == null) {
+            throw new RuntimeException("Cart is empty");
         }
 
-        List<CartItem> items = cart.getCartItems();
-
-        boolean removed = items.removeIf(item ->
+        boolean removed = cart.getCartItems().removeIf(item ->
                 item.getProduct().getProductId().equals(productId)
         );
 
@@ -88,8 +93,8 @@ public class CartService {
 
         Cart cart = cartRepo.findByUserId(userId);
 
-        if (cart == null) {
-            throw new RuntimeException("Cart not found");
+        if (cart == null || cart.getCartItems() == null) {
+            return new ArrayList<>(); 
         }
 
         return cart.getCartItems();

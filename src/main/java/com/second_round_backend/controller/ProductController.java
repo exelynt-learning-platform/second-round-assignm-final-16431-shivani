@@ -3,70 +3,41 @@ package com.second_round_backend.controller;
 import java.util.List;
 
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.second_round_backend.entity.Cart;
 import com.second_round_backend.entity.Product;
 import com.second_round_backend.service.ProductService;
 
-@RequestMapping("/api")
+import lombok.RequiredArgsConstructor;
+
 @RestController
+@RequestMapping("/api/products")
+@RequiredArgsConstructor
 public class ProductController {
 
-	private final ProductService productService;
-	
-	public ProductController(ProductService productService) {
-		this.productService = productService;
-	}
-	
-	@GetMapping("/getAllProducts")
-	public List<Product> getAllProducts() {
-	        return productService.getAllProducts();
-	}
-	
-	@PreAuthorize("hasRole('ADMIN')")
-	@PostMapping("/addProduct")
-	public String addProduct(@RequestBody Product product) {
-		return productService.addProduct(product);
-	}
-	
-	@PreAuthorize("hasRole('ADMIN')")
-	@PostMapping("/updateProduct")
-	public String updateProduct(@RequestBody Product newProduct) {
-		return productService.updateProduct(newProduct);
-	}
-	
-	@PreAuthorize("hasRole('ADMIN')")
-	@DeleteMapping("/deleteProduct/{id}")
-	public String deleteProduct(@PathVariable Long id) {
-		return productService.deleteProduct(id);
-	}
-	
-	@PreAuthorize("hasRole('USER')")
-	@PostMapping("/addProductInCart/{userId}/{productId}/{quantity}")
-	public Cart addToCart(@PathVariable Long userId,
-			              @PathVariable Long productId,
-			              @PathVariable int quantity) {
-		return productService.addToCart(userId, productId,quantity);
-	}
-	
-	private String getLoggedInUserEmail() {
-	    Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    private final ProductService productService;
 
-	    if (principal instanceof UserDetails) {
-	        return ((UserDetails) principal).getUsername();
-	    } else {
-	        return principal.toString();
-	    }
-	}
-	
+    @GetMapping("/getAllProducts")
+    public List<Product> getAllProducts() {
+        return productService.getAllProducts();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/adproduct")
+    public Product addProduct(@RequestBody Product product) {
+        return productService.addProduct(product);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/updateProduct")
+    public Product updateProduct(@RequestBody Product newProduct) {
+        return productService.updateProduct(newProduct);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public String deleteProduct(@PathVariable Long id) {
+        productService.deleteProduct(id);
+        return "Product deleted successfully";
+    }
 }

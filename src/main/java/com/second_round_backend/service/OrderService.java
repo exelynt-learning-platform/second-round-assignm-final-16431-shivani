@@ -25,10 +25,18 @@ public class OrderService {
 
         Cart cart = cartRepo.findByUserId(userId);
 
+        if (cart == null) {
+            throw new RuntimeException("Cart not found for user");
+        }
+
+        if (cart.getCartItems() == null || cart.getCartItems().isEmpty()) {
+            throw new RuntimeException("Cart is empty");
+        }
+
         Order order = new Order();
         order.setUser(cart.getUser());
 
-        List<OrderItem> orderItems = new ArrayList();
+        List<OrderItem> orderItems = new ArrayList<>();
 
         double total = 0;
 
@@ -37,6 +45,9 @@ public class OrderService {
             OrderItem oi = new OrderItem();
             oi.setProduct(item.getProduct());
             oi.setQuantity(item.getQuantity());
+
+
+            oi.setOrder(order);
 
             total += item.getProduct().getPrice() * item.getQuantity();
 
@@ -47,12 +58,17 @@ public class OrderService {
         order.setTotalPrice(total);
         order.setStatus("PENDING");
 
-        return orderRepo.save(order);
+        Order savedOrder = orderRepo.save(order);
+
+        cart.getCartItems().clear();
+        cartRepo.save(cart);
+
+        return savedOrder;
     }
 
-	public Order getOrder(Long id) throws Exception {
-		return orderRepo.findById(id)
-	            .orElseThrow(() ->
-	                    new Exception("Order not found with id: " + id));
-	}
+    public Order getOrder(Long id) throws Exception {
+        return orderRepo.findById(id)
+                .orElseThrow(() ->
+                        new Exception("Order not found with id: " + id));
+    }
 }

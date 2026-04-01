@@ -1,37 +1,23 @@
 package com.second_round_backend.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.second_round_backend.entity.Order;
-import com.second_round_backend.service.OrderService;
 import com.second_round_backend.service.PaymentService;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/api/payment")
 @RequiredArgsConstructor
-public class OrderController {
+public class PaymentController {
 
-    private final OrderService service;
     private final PaymentService paymentService;
 
-    @PostMapping("/creatOrder/{userId}")
-    public Order createOrder(@PathVariable Long userId) {
-        return service.createOrder(userId);
-    }
-
-    @GetMapping("/getOrder/{id}")
-    public Order getOrder(@PathVariable Long id) throws Exception {
-        return service.getOrder(id);
-    }
-
-    @PostMapping("/pay/{orderId}")
+    @PostMapping("/create/{orderId}")
     public String createPayment(@PathVariable Long orderId) throws Exception {
         return paymentService.createPayment(orderId);
     }

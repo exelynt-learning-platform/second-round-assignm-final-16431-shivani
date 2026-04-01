@@ -29,8 +29,9 @@ public class Order {
 
     private String shippingAddress;  
     private String paymentStatus;  
+    private String paymentId; 
     
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderitems;
     
     public Order() {
